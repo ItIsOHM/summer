@@ -7,12 +7,12 @@ export function Footer() {
         <MountainIcon className="h-6 w-6" />
         <span className="text-lg font-medium">Summer</span>
       </div>
-      <span className="text-sm">Made with love by Rhythm Garg.</span>
+      <span className="text-sm">Made by Rhythm Garg.</span>
     </footer>
   );
 }
 
-function MountainIcon(props) {
+function MountainIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}

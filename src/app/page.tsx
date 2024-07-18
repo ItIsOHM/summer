@@ -126,7 +126,7 @@ export default function Page() {
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-6xl font-bold text-white">Summer</h1>
           <Link
-            href="#"
+            href="https://github.com/ItIsOHM/summer"
             className="text-white hover:underline"
             prefetch={false}
           >
