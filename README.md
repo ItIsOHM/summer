@@ -1,36 +1,48 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Summer - AI-Powered Content Summarization Tool
 
-## Getting Started
+## Introduction
 
-First, run the development server:
+**Summer** is a powerful tool designed to summarize text, documents, and articles using AI technology. It supports multiple input methods, including text paste, file upload, and URL input, making it versatile for different use cases.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Features
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **Text Summarization**: Summarize large chunks of text.
+- **File Upload**: Upload documents (e.g., PDFs) for summarization.
+- **URL Input**: Provide a URL to an article for summarization.
+- **Download Summary**: Download the summarized text as a file.
+- **Copy to Clipboard**: Easily copy the summarized text to your clipboard.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Technologies Used
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+- **Frontend**: Next.js, React, Tailwind CSS
+- **Backend**: Next.js App Router.
+- **AI Integration**: Google Gemma 7B
+- **Document Parsing**: `office-text-extractor`, `web-text-extractor`, `article-extractor`, `html-to-text`
+- **Deployment**: Vercel
 
-## Learn More
+## Usage
 
-To learn more about Next.js, take a look at the following resources:
+1. **Text Input**:
+    - Choose "Paste text" from the dropdown.
+    - Paste your text into the provided text area.
+    - Click "Summarize" to get the summarized text.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+2. **File Upload**:
+    - Choose "Upload a file" from the dropdown.
+    - Upload your document.
+    - Click "Summarize" to get the summarized text.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+3. **URL Input**:
+    - Choose "Enter a URL" from the dropdown.
+    - Enter the URL of the article you want to summarize.
+    - Click "Summarize" to get the summarized text.
 
-## Deploy on Vercel
+4. **Download Summary**:
+    - Click the "Download Summary" button in the summary modal to download the summarized text as a file.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+5. **Copy to Clipboard**:
+    - Click the "Copy to Clipboard" button in the summary modal to copy the summarized text to your clipboard.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+## Contact Me:
+
+Please email me at [rhythmgarg05@gmail.com](mailto:rhythmgarg05@gmail.com).
