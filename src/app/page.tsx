@@ -33,6 +33,7 @@ require("dotenv");
 export default function Page() {
   const [inputText, setInputText] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [url, setUrl] = useState("");
   const [summary, setSummary] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [inputMode, setInputMode] = useState("text");
@@ -42,6 +43,7 @@ export default function Page() {
     if (event.target.files) {
       setFile(event.target.files[0]);
       setInputText("");
+      setUrl("");
       setInputMode("file");
     }
   };
@@ -49,18 +51,32 @@ export default function Page() {
   const handleTextInput = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInputText(event.target.value);
     setFile(null);
+    setUrl("");
     setInputMode("text");
+  };
+
+  const handleURLInput = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setUrl(event.target.value);
+    setInputText("");
+    setFile(null);
+    setInputMode("url");
   };
 
   const generateSummary = async () => {
     try {
       let textToSummarize = "";
       if (file) {
+        setLoading(true);
         const fileText = await readFileText(file);
         textToSummarize = fileText;
+      } else if (url) {
+        setLoading(true);
+        const urlText = await readUrlText(url);
+        textToSummarize = urlText;
       } else {
         textToSummarize = inputText;
       }
+
       setLoading(true);
       const summarizedText = await summarizeText(textToSummarize);
       setSummary(summarizedText);
@@ -87,8 +103,37 @@ export default function Page() {
   };
 
   const readFileText = async (file: File) => {
-    const text = await file.text();
-    return text;
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await fetch("/api/extract", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to read document.");
+    }
+
+    const data = await response.json();
+    return data.content;
+  };
+
+  const readUrlText = async (url: string) => {
+    const response = await fetch("/api/extract", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({ url }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch the article.");
+    }
+
+    const data = await response.json();
+    return data.extractedText;
   };
 
   const summarizeText = async (text: string) => {
@@ -106,7 +151,6 @@ export default function Page() {
       }
 
       const data = await response.json();
-      console.log(data);
 
       return `${data.content}`;
     } catch (error) {
@@ -150,7 +194,11 @@ export default function Page() {
                   variant="outline"
                   className="w-full justify-between rounded-md bg-white/10 text-white hover:bg-white/20"
                 >
-                  {inputMode === "file" ? "Upload a file" : "Paste text"}
+                  {inputMode === "file"
+                    ? "Upload a file"
+                    : inputMode === "url"
+                    ? "Enter a URL"
+                    : "Paste Text"}
                   <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </DropdownMenuTrigger>
@@ -161,10 +209,13 @@ export default function Page() {
                 <DropdownMenuItem onClick={() => setInputMode("text")}>
                   Paste text
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setInputMode("url")}>
+                  Enter a URL
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          {inputMode === "file" ? (
+          {inputMode === "file" && (
             <div>
               <label
                 htmlFor="file-upload"
@@ -181,7 +232,8 @@ export default function Page() {
                 />
               </div>
             </div>
-          ) : (
+          )}
+          {inputMode === "text" && (
             <div>
               <label
                 htmlFor="text-input"
@@ -199,6 +251,24 @@ export default function Page() {
               />
             </div>
           )}
+          {inputMode === "url" && (
+            <div>
+              <label
+                htmlFor="url-input"
+                className="mb-2 block text-sm font-medium text-white"
+              >
+                Enter a URL
+              </label>
+              <input
+                id="url-input"
+                type="url"
+                className="block w-full rounded-md border-2 border-white/20 bg-white/10 py-2 px-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 placeholder:text-white/50"
+                placeholder="Enter the article URL..."
+                value={url}
+                onChange={handleURLInput}
+              />
+            </div>
+          )}
         </div>
         <Button
           onClick={generateSummary}
@@ -210,7 +280,7 @@ export default function Page() {
         </Button>
       </div>
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="sm:max-w-[600px] overflow-y-scroll max-h-[75vh]">
           <DialogHeader>
             <DialogTitle>Summary</DialogTitle>
             <DialogDescription>
