@@ -10,7 +10,7 @@ export async function POST(req: Request) {
   const { text } = await req.json();
   try {
     const response = await openai.chat.completions.create({
-      model: "google/gemma-7b-it:free",
+      model: "google/gemma-2-27b-it:free",
       messages: [
         {
           role: "system",
