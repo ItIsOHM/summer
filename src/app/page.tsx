@@ -38,6 +38,7 @@ export default function Page() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [inputMode, setInputMode] = useState("text");
   const [loading, setLoading] = useState(false);
+  const [copyStatus, setCopyStatus] = useState("Copy to Clipboard");
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
@@ -64,31 +65,34 @@ export default function Page() {
 
   const generateSummary = async () => {
     try {
+      setLoading(true);
       let textToSummarize = "";
       if (file) {
-        setLoading(true);
         const fileText = await readFileText(file);
         textToSummarize = fileText;
       } else if (url) {
-        setLoading(true);
         const urlText = await readUrlText(url);
         textToSummarize = urlText;
       } else {
         textToSummarize = inputText;
       }
 
-      setLoading(true);
-      const summarizedText = await summarizeText(textToSummarize);
-      setSummary(summarizedText);
-      setLoading(false);
+      setSummary("");
       setIsModalOpen(true);
+
+      await summarizeText(textToSummarize);
     } catch (error) {
       console.error("Error generating summary:", error);
     }
   };
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(summary);
+    navigator.clipboard.writeText(summary).then(() => {
+      setCopyStatus("Copied!");
+      setTimeout(() => {
+        setCopyStatus("Copy to Clipboard");
+      }, 2000);
+    });
   };
 
   const downloadSummary = () => {
@@ -146,16 +150,27 @@ export default function Page() {
         body: JSON.stringify({ text }),
       });
 
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
+      if (!response.body) throw new Error("ReadableStream not supported");
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let fullSummary = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        fullSummary += chunk;
+        setSummary((prev) => prev + chunk);
       }
 
-      const data = await response.json();
-
-      return `${data.content}`;
+      return fullSummary;
     } catch (error) {
       console.error("Error summarizing text:", error);
       return "An error occurred while summarizing the text.";
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -282,14 +297,20 @@ export default function Page() {
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="sm:max-w-[600px] overflow-y-scroll max-h-[75vh]">
           <DialogHeader>
-            <DialogTitle>Summary</DialogTitle>
-            <DialogDescription>
-              Here is the summarized text. You can copy or download it.
+            <DialogTitle className="text-lg">Summary</DialogTitle>
+            <DialogDescription >
+              {summary.length > 0 ? (
+                <div className="prose dark:prose-invert">
+                  <ReactMarkdown>{summary}</ReactMarkdown>
+                </div>
+              ) : (
+                <div className="flex items-center">
+                  <Loader className="mr-2 h-4 w-4 animate-spin" />
+                  <span>Loading summary...</span>
+                </div>
+              )}
             </DialogDescription>
           </DialogHeader>
-          <div className="prose dark:prose-invert">
-            <ReactMarkdown>{summary}</ReactMarkdown>
-          </div>
           <DialogFooter>
             <div className="flex gap-4">
               <Button variant="outline" onClick={copyToClipboard}>
